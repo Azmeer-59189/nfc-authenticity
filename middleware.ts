@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { SESSION_COOKIE } from "@/lib/session-cookie";
 
 // Runs on the edge, so we verify the JWT directly here rather than importing
 // the Node-only Prisma-touching helpers from lib/auth.ts.

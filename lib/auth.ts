@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { SESSION_COOKIE } from "@/lib/session-cookie";
+export { SESSION_COOKIE };
 
-export const SESSION_COOKIE = "admin_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
 function getSecretKey() {
