@@ -1,0 +1,67 @@
+// Prisma schema for the NFC product authenticity platform.
+// Uses PostgreSQL. Set DATABASE_URL in your .env file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  products     Product[]
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  sku           String   @unique
+  description   String?
+
+  // High priority: the unique value written into the product's NFC tag
+  // (encoded as https://yourapp.com/verify/<nfcId> on the tag itself).
+  nfcId         String   @unique
+
+  // Low priority: printed QR code value on the product/packaging.
+  qrValue       String   @unique
+
+  // Low priority: reference photo + its perceptual hash for similarity matching.
+  imageUrl      String
+  imageHash     String   // 64-bit difference hash, stored as a 16-char hex string
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  createdBy     Admin    @relation(fields: [createdById], references: [id])
+  createdById   String
+
+  scans         Scan[]
+}
+
+// Every verification attempt is logged, successful or not. This is what lets
+// an admin notice a genuine NFC ID being tapped an unusual number of times or
+// from unexpected patterns -- a signal that a tag may have been cloned.
+model Scan {
+  id            String   @id @default(uuid())
+  product       Product? @relation(fields: [productId], references: [id])
+  productId     String?
+
+  nfcIdScanned  String   // whatever NFC id was in the URL, even if not found
+  nfcMatched    Boolean
+
+  qrMatched     Boolean?
+  imageMatched  Boolean?
+  imageDistance Int?     // Hamming distance between uploaded and reference hash
+
+  overallResult String   // "authentic" | "suspicious" | "not_authentic"
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+}
