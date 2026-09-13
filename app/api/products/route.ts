@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { computeImageHash } from "@/lib/phash";
 import { getSupabaseAdmin, PRODUCT_IMAGES_BUCKET } from "@/lib/supabase";
 
-// sharp requires the Node.js runtime, not the edge.
 export const runtime = "nodejs";
 
 export async function GET() {
@@ -18,6 +16,7 @@ export async function GET() {
       id: true,
       name: true,
       sku: true,
+      brand: true,
       nfcId: true,
       qrValue: true,
       imageUrl: true,
@@ -35,20 +34,21 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const name = form.get("name")?.toString().trim();
   const sku = form.get("sku")?.toString().trim();
+  const brand = form.get("brand")?.toString().trim().toLowerCase();
   const description = form.get("description")?.toString().trim() || null;
   const nfcId = form.get("nfcId")?.toString().trim() || uuid();
   const qrValue = form.get("qrValue")?.toString().trim() || uuid();
   const image = form.get("image") as File | null;
 
-  if (!name || !sku) {
+  if (!name || !sku || !brand) {
     return NextResponse.json(
-      { error: "Product name and SKU are required." },
+      { error: "Product name, SKU, and brand are all required." },
       { status: 400 }
     );
   }
   if (!image || image.size === 0) {
     return NextResponse.json(
-      { error: "A reference photo is required for image verification." },
+      { error: "A reference photo is required." },
       { status: 400 }
     );
   }
@@ -66,8 +66,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That QR value is already assigned to a product." }, { status: 409 });
 
   const bytes = Buffer.from(await image.arrayBuffer());
-  const imageHash = await computeImageHash(bytes);
-
   const ext = (image.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
   const filename = `${uuid()}.${ext}`;
 
@@ -92,11 +90,11 @@ export async function POST(req: NextRequest) {
     data: {
       name,
       sku,
+      brand,
       description,
       nfcId,
       qrValue,
       imageUrl,
-      imageHash,
       createdById: session.adminId,
     },
   });

@@ -7,6 +7,7 @@ export default function NewProductPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
+  const [brand, setBrand] = useState("");
   const [description, setDescription] = useState("");
   const [nfcId, setNfcId] = useState("");
   const [qrValue, setQrValue] = useState("");
@@ -27,6 +28,7 @@ export default function NewProductPage() {
     const form = new FormData();
     form.append("name", name);
     form.append("sku", sku);
+    form.append("brand", brand);
     form.append("description", description);
     if (nfcId.trim()) form.append("nfcId", nfcId.trim());
     if (qrValue.trim()) form.append("qrValue", qrValue.trim());
@@ -67,6 +69,21 @@ export default function NewProductPage() {
               onChange={(e) => setSku(e.target.value)}
               className="w-full rounded-lg border border-line bg-white px-4 py-3 font-mono text-sm outline-none focus:border-gold"
             />
+          </div>
+          <div>
+            <label className="label-eyebrow mb-1 block">Brand</label>
+            <input
+              required
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              placeholder="e.g. nike"
+              className="w-full rounded-lg border border-line bg-white px-4 py-3 font-mono text-sm outline-none focus:border-gold"
+            />
+            <p className="mt-1 text-xs text-foil">
+              Must exactly match one of the class names your logo-detection
+              model was trained on (check the notebook's{" "}
+              <code className="font-mono">model.names</code> output). Lowercase.
+            </p>
           </div>
           <div>
             <label className="label-eyebrow mb-1 block">Description (optional)</label>

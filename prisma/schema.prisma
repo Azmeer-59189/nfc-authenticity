@@ -25,6 +25,12 @@ model Product {
   sku           String   @unique
   description   String?
 
+  // The brand this product belongs to, as a lowercase string matching one
+  // of the class names your trained YOLO model was trained to detect
+  // (e.g. "nike", "adidas"). Used to check that the logo detected in a
+  // customer's photo actually matches the brand this product claims to be.
+  brand         String
+
   // High priority: the unique value written into the product's NFC tag
   // (encoded as https://yourapp.com/verify/<nfcId> on the tag itself).
   nfcId         String   @unique
@@ -32,9 +38,10 @@ model Product {
   // Low priority: printed QR code value on the product/packaging.
   qrValue       String   @unique
 
-  // Low priority: reference photo + its perceptual hash for similarity matching.
+  // Reference photo, kept for display purposes (shown to the customer
+  // during verification) even though matching now happens via logo
+  // detection rather than perceptual image comparison.
   imageUrl      String
-  imageHash     String   // 64-bit difference hash, stored as a 16-char hex string
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

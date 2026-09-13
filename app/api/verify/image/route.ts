@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { computeImageHash, hammingDistance, IMAGE_MATCH_THRESHOLD } from "@/lib/phash";
 
 export const runtime = "nodejs";
 
-// Step (low priority): does the uploaded photo perceptually resemble the
-// reference photo on file? This is the easiest check to spoof (anyone can
-// hold up a good replica or a photo of the real product) so it only ever
-// contributes to a "suspicious" flag, never fails verification by itself.
+// Step (was: photo similarity, now: logo detection). We forward the
+// customer's photo to a separately-hosted YOLO model (see
+// logo-verification/inference-api in the project docs) and check whether
+// the logo it detects matches the brand this product claims to be.
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const scanId = form.get("scanId")?.toString();
@@ -27,23 +26,58 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Product no longer exists." }, { status: 404 });
   }
 
-  const bytes = Buffer.from(await image.arrayBuffer());
-  const uploadedHash = await computeImageHash(bytes);
-  const distance = hammingDistance(uploadedHash, product.imageHash);
-  const matched = distance <= IMAGE_MATCH_THRESHOLD;
+  const logoApiUrl = process.env.LOGO_API_URL;
+  if (!logoApiUrl) {
+    return NextResponse.json(
+      { error: "Logo detection service is not configured." },
+      { status: 500 }
+    );
+  }
 
-  // NFC is required and already known from the initial tap. QR and image are
-  // supplementary: both passing means "authentic", NFC passing but one of
-  // the easy-to-spoof checks failing means "suspicious" (worth a human
-  // review), and NFC not matching at all (handled at the /verify/[nfcId]
-  // step) means "not_authentic".
+  const forwardForm = new FormData();
+  forwardForm.append("file", image, image.name || "photo.jpg");
+
+  let detection: {
+    detected: boolean;
+    best_match: { brand: string; confidence: number } | null;
+  };
+  try {
+    const res = await fetch(`${logoApiUrl.replace(/\/$/, "")}/detect`, {
+      method: "POST",
+      body: forwardForm,
+    });
+    if (!res.ok) throw new Error(`Logo API returned ${res.status}`);
+    detection = await res.json();
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Couldn't reach the logo detection service. Try again in a moment." },
+      { status: 502 }
+    );
+  }
+
+  const detectedBrand = detection.best_match?.brand?.toLowerCase();
+  const confidence = detection.best_match?.confidence ?? 0;
+  const matched = detection.detected && detectedBrand === product.brand.toLowerCase();
+
+  // NFC is required and already known from the initial tap. QR and logo
+  // detection are supplementary: both passing means "authentic", NFC
+  // passing but one of these failing means "suspicious" (worth review).
   const overallResult =
     scan.nfcMatched && scan.qrMatched && matched ? "authentic" : "suspicious";
 
   await prisma.scan.update({
     where: { id: scanId },
-    data: { imageMatched: matched, imageDistance: distance, overallResult },
+    data: {
+      imageMatched: matched,
+      imageDistance: Math.round((1 - confidence) * 100), // reused column: 0 = perfect match, 100 = none
+      overallResult,
+    },
   });
 
-  return NextResponse.json({ matched, distance, overallResult });
+  return NextResponse.json({
+    matched,
+    detectedBrand: detectedBrand ?? null,
+    confidence,
+    overallResult,
+  });
 }
