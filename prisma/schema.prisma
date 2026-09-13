@@ -37,11 +37,7 @@ model Product {
 
   // Low priority: printed QR code value on the product/packaging.
   qrValue       String   @unique
-
-  // Reference photo, kept for display purposes (shown to the customer
-  // during verification) even though matching now happens via logo
-  // detection rather than perceptual image comparison.
-  imageUrl      String
+  
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

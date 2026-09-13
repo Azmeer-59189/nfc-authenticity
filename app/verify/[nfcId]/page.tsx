@@ -12,7 +12,6 @@ type Product = {
   name: string;
   sku: string;
   description: string | null;
-  referenceImageUrl: string;
 };
 
 type Stage = "loading" | "image" | "qr" | "done" | "invalid";
@@ -74,17 +73,13 @@ export default function VerifyPage() {
     }
     setQrMatched(data.matched);
 
-    // NFC already matched (that's how we got here). Combine all three
-    // signals client-side for immediate display; the server has already
-    // recorded the authoritative result for the image step, and we finalize
-    // it here by also factoring in the QR outcome.
     const authentic = data.matched && imageMatched;
     setFinalResult(authentic ? "authentic" : "suspicious");
     setStage("done");
   }
 
   const steps = [
-    { label: "Photo", status: stepStatus(stage, "image") },
+    { label: "Logo", status: stepStatus(stage, "image") },
     { label: "QR code", status: stepStatus(stage, "qr") },
     { label: "NFC tag", status: "done" as const },
   ];
@@ -110,12 +105,8 @@ export default function VerifyPage() {
 
           {stage === "loading" && <p className="text-sm text-foil">Reading tag...</p>}
 
-          {stage === "image" && product && (
-            <ImageUploadStep
-              referenceImageUrl={product.referenceImageUrl}
-              onSubmit={submitImage}
-              submitting={submittingImage}
-            />
+          {stage === "image" && (
+            <ImageUploadStep onSubmit={submitImage} submitting={submittingImage} />
           )}
 
           {stage === "qr" && (
@@ -140,7 +131,7 @@ export default function VerifyPage() {
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt>Photo</dt>
+                  <dt>Logo</dt>
                   <dd className={imageMatched ? "text-verify" : "text-alert"}>
                     {imageMatched ? "matched" : "no match"}
                   </dd>
@@ -148,8 +139,8 @@ export default function VerifyPage() {
               </dl>
               {finalResult === "suspicious" && (
                 <p className="max-w-xs text-center text-sm text-foil">
-                  Your tag is genuine, but the photo or QR code didn&apos;t match our
-                  records. This can happen with packaging changes -- if you have
+                  Your tag is genuine, but the logo or QR code didn&apos;t match our
+                  records. This can happen with unclear photos -- if you have
                   concerns, contact the seller with your product&apos;s SKU:{" "}
                   <span className="font-mono">{product?.sku}</span>.
                 </p>

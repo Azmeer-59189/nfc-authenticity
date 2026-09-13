@@ -4,8 +4,6 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
 // Step 1 (high priority): does this NFC id exist in our database at all?
-// This is what a customer hits the instant they tap their phone on the tag,
-// since the tag itself is programmed with a URL like /verify/<nfcId>.
 export async function GET(
   req: NextRequest,
   { params }: { params: { nfcId: string } }
@@ -14,7 +12,7 @@ export async function GET(
 
   const product = await prisma.product.findUnique({
     where: { nfcId },
-    select: { id: true, name: true, sku: true, description: true, imageUrl: true },
+    select: { id: true, name: true, sku: true, description: true, brand: true },
   });
 
   const scan = await prisma.scan.create({
@@ -40,10 +38,6 @@ export async function GET(
       name: product.name,
       sku: product.sku,
       description: product.description,
-      // The reference photo itself is fine to show back to the customer
-      // ("here's what the real thing looks like") -- only the perceptual
-      // hash and QR value stay server-side.
-      referenceImageUrl: product.imageUrl,
     },
   });
 }

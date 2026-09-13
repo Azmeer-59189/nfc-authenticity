@@ -38,6 +38,7 @@ export default async function DashboardPage() {
               <thead>
                 <tr className="border-b border-line bg-white/60 text-left label-eyebrow">
                   <th className="px-4 py-3">Product</th>
+                  <th className="px-4 py-3">Brand</th>
                   <th className="px-4 py-3">SKU</th>
                   <th className="px-4 py-3">NFC ID</th>
                   <th className="px-4 py-3">Scans</th>
@@ -48,11 +49,11 @@ export default async function DashboardPage() {
                 {products.map((p) => (
                   <tr key={p.id} className="border-b border-line last:border-0 hover:bg-white/40">
                     <td className="px-4 py-3">
-                      <Link href={`/admin/dashboard/${p.id}`} className="flex items-center gap-3">
-                        <img src={p.imageUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
-                        <span className="font-medium">{p.name}</span>
+                      <Link href={`/admin/dashboard/${p.id}`} className="font-medium">
+                        {p.name}
                       </Link>
                     </td>
+                    <td className="px-4 py-3 text-foil">{p.brand}</td>
                     <td className="px-4 py-3 font-mono text-xs text-foil">{p.sku}</td>
                     <td className="px-4 py-3 font-mono text-xs text-foil">{p.nfcId.slice(0, 12)}...</td>
                     <td className="px-4 py-3">{p._count.scans}</td>
