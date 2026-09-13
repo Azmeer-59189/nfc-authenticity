@@ -11,17 +11,11 @@ export default function NewProductPage() {
   const [description, setDescription] = useState("");
   const [nfcId, setNfcId] = useState("");
   const [qrValue, setQrValue] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) {
-      setError("Please add a reference photo.");
-      return;
-    }
     setLoading(true);
     setError(null);
 
@@ -32,7 +26,6 @@ export default function NewProductPage() {
     form.append("description", description);
     if (nfcId.trim()) form.append("nfcId", nfcId.trim());
     if (qrValue.trim()) form.append("qrValue", qrValue.trim());
-    form.append("image", file);
 
     const res = await fetch("/api/products", { method: "POST", body: form });
     setLoading(false);
@@ -76,13 +69,12 @@ export default function NewProductPage() {
               required
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
-              placeholder="e.g. nike"
+              placeholder="e.g. Coca Cola"
               className="w-full rounded-lg border border-line bg-white px-4 py-3 font-mono text-sm outline-none focus:border-gold"
             />
             <p className="mt-1 text-xs text-foil">
-              Must exactly match one of the class names your logo-detection
-              model was trained on (check the notebook's{" "}
-              <code className="font-mono">model.names</code> output). Lowercase.
+              Must match one of the class names your logo-detection model was
+              trained on (case doesn&apos;t matter, spelling does).
             </p>
           </div>
           <div>
@@ -120,29 +112,6 @@ export default function NewProductPage() {
             printable QR code and the exact URL to write onto the NFC tag on the
             next screen.
           </p>
-
-          <div>
-            <label className="label-eyebrow mb-1 block">Reference photo</label>
-            <label className="flex aspect-video w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-line bg-white text-sm text-foil">
-              {preview ? (
-                <img src={preview} alt="" className="h-full w-full object-cover" />
-              ) : (
-                "Click to upload"
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) {
-                    setFile(f);
-                    setPreview(URL.createObjectURL(f));
-                  }
-                }}
-              />
-            </label>
-          </div>
 
           {error && <p className="text-sm text-alert">{error}</p>}
 
