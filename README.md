@@ -148,4 +148,4 @@ tag opens that URL automatically — no app required on the customer's side.
   images, once you see how confidence scores hold up on actual customer
   phone photos — casual photos often score lower than studio shots.
 - **Clean up dead code**: `lib/phash.ts`, `lib/supabase.ts`, and the
-  `product-images` Supabase Storage bucket are no longer used.
+  `product-images` Supabase Storage bucket are no longer used.  

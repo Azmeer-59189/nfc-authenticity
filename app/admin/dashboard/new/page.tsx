@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { TRAINED_BRANDS } from "@/lib/brands";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -65,16 +66,24 @@ export default function NewProductPage() {
           </div>
           <div>
             <label className="label-eyebrow mb-1 block">Brand</label>
-            <input
+            <select
               required
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
-              placeholder="e.g. Coca Cola"
-              className="w-full rounded-lg border border-line bg-white px-4 py-3 font-mono text-sm outline-none focus:border-gold"
-            />
+              className="w-full rounded-lg border border-line bg-white px-4 py-3 text-sm outline-none focus:border-gold"
+            >
+              <option value="" disabled>
+                Select a brand
+              </option>
+              {TRAINED_BRANDS.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
             <p className="mt-1 text-xs text-foil">
-              Must match one of the class names your logo-detection model was
-              trained on (case doesn&apos;t matter, spelling does).
+              Only brands the logo-detection model was trained on are listed
+              here.
             </p>
           </div>
           <div>

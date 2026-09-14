@@ -1,0 +1,36 @@
+// The exact class names the YOLO logo-detection model was trained on
+// (from data.yaml). Keep this list in sync if you retrain with different
+// or additional brands -- this is what populates the admin dashboard's
+// Brand dropdown, so there's no way to typo a brand name anymore.
+export const TRAINED_BRANDS = [
+  "Amazon.com Inc.",
+  "Apple Inc.",
+  "Balaji Wafers",
+  "Burger King Corporation",
+  "Chipotle Mexican Grill",
+  "Coca Cola",
+  "Dell Inc.",
+  "Dominos Pizza Inc.",
+  "Flipkart Private Limited",
+  "Google LLC",
+  "HDFC Bank",
+  "HP Inc.",
+  "ICICI Bank",
+  "Instagram",
+  "Kentucky Fried Chicken Corporation",
+  "Kotak Mahindra Bank Ltd",
+  "Lays",
+  "McDonalds Corporation",
+  "Mercedes Benz Group AG",
+  "Meta Platforms Inc.",
+  "Microsoft Corporation",
+  "Nestle S.A.",
+  "OnePlus",
+  "PepsiCo Inc.",
+  "Pizza Hut",
+  "Raymond Ltd",
+  "Samsung Electronics Co. Ltd.",
+  "Starbucks Corporation",
+  "State Bank of India",
+  "Walmart Inc.",
+] as const;
